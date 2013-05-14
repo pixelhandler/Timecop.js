@@ -1,3 +1,10 @@
 .jhw-cache
 /node_modules
 /tmp
+
+# jasmine gem
+jhw.*.html
+/public
+spec/javascripts/support/jasmine_helper.rb
+spec/javascripts/support/jasmine_config.rb
+spec/javascripts/support/jasmine_runner.rb
