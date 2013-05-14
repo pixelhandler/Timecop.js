@@ -153,6 +153,7 @@ Timecop.MockDate = function() {
     var date = Timecop.topOfStack().date();
     this._underlyingDate = Timecop.buildNativeDate.call(Timecop, date.getTime());
   }
+  this.decorate(this._underlyingDate);
 };
 
 Timecop.MockDate.UTC = function() {
@@ -163,41 +164,38 @@ Timecop.MockDate.parse = function(dateString) {
   return Timecop.NativeDate.parse(dateString);
 };
 
-Timecop.MockDate.prototype = {};
-
-// Delegate `method` to the underlying date,
-// passing all arguments and returning the result.
-function defineDelegate(method) {
-  Timecop.MockDate.prototype[method] = function() {
-    return this._underlyingDate[method].apply(this._underlyingDate, arguments);
+if (Timecop.NativeDate.hasOwnProperty('now')) {
+  Timecop.MockDate.now = function() {
+    return new Timecop.MockDate().getTime();
   };
 }
 
-defineDelegate('toDateString');
-defineDelegate('toGMTString');
-defineDelegate('toISOString');
-defineDelegate('toJSON');
-defineDelegate('toLocaleDateString');
-defineDelegate('toLocaleString');
-defineDelegate('toLocaleTimeString');
-defineDelegate('toString');
-defineDelegate('toTimeString');
-defineDelegate('toUTCString');
-defineDelegate('valueOf');
+Timecop.MockDate.prototype = {
 
-var delegatedAspects = [
-    'Date', 'Day', 'FullYear', 'Hours', 'Milliseconds', 'Minutes', 'Month',
-    'Seconds', 'Time', 'TimezoneOffset', 'UTCDate', 'UTCDay',
-    'UTCFullYear', 'UTCHours', 'UTCMilliseconds', 'UTCMinutes',
-    'UTCMonth', 'UTCSeconds', 'Year'
-  ],
-  delegatedActions = [ 'get', 'set' ];
+  decorate: function(date){
+    var proto = Timecop.MockDate.prototype, i,
+        props = Object.getOwnPropertyNames(Timecop.NativeDate.prototype);
 
-for (var i = 0; i < delegatedActions.length; i++) {
-  for (var j = 0; j < delegatedAspects.length; j++) {
-    defineDelegate(delegatedActions[i] + delegatedAspects[j]);
+    for (i = props.length - 1; i >= 0; i--) {
+      if (props[i] !== 'constructor') {
+        this.delegate(props[i], date);
+      }
+    }
+  },
+
+  // Delegate `method` to the underlying date, 
+  // passing all arguments and returning the result.
+  delegate: function(method, date){
+    if (!this.hasOwnProperty(method) ){
+      this[method] = function() {
+        return date[method].apply(date, arguments);
+      }.bind(this);
+    } else {
+      this[method].bind(date);
+    }
   }
-}
+
+};
 
 
 /*globals Timecop*/

@@ -85,13 +85,16 @@ describe('Timecop.MockDate', function() {
   });
 
   it('has setters', function() {
-    [
-      'Date', 'Day', 'FullYear', 'Hours', 'Milliseconds', 'Minutes', 'Month',
-    'Seconds', 'Time', 'TimezoneOffset', 'UTCDate', 'UTCDay',
-      'UTCFullYear', 'UTCHours', 'UTCMilliseconds', 'UTCMinutes',
-      'UTCMonth', 'UTCSeconds', 'Year'
-    ].forEach(function(aspect) {
-      expect(date).toHaveFunction('set' + aspect);
+    var setters = [], 
+        props = Object.getOwnPropertyNames(Timecop.NativeDate.prototype);
+
+    for (var i = props.length - 1; i >= 0; i--) {
+      if (/^set/.test(props[i])) {
+        setters.push(props[i]);
+      }
+    };
+    setters.forEach(function(name) {
+      expect(date).toHaveFunction(name);
     });
   });
 
